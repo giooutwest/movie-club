@@ -1,0 +1,44 @@
+import Image from "next/image";
+
+const SIZES = {
+  sm: { w: 108, h: 44, text: "text-[11px]" },
+  lg: { w: 220, h: 90, text: "text-2xl" },
+} as const;
+
+export function SoapLogo({ size = "sm" }: { size?: "sm" | "lg" }) {
+  const s = SIZES[size];
+  return (
+    <div
+      className="relative flex select-none items-center justify-center overflow-hidden rounded-[999px] shrink-0"
+      style={{
+        width: s.w,
+        height: s.h,
+        boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
+      }}
+    >
+      <Image
+        src="/soap-bar.png"
+        alt="Movie Club"
+        fill
+        sizes={`${s.w}px`}
+        className="object-cover"
+        priority
+      />
+      <div className="absolute inset-0 bg-black/10" />
+      <div className="relative flex flex-col items-center leading-none">
+        <span
+          className={`font-[var(--font-display)] uppercase tracking-[0.14em] text-black/85 ${s.text}`}
+          style={{ textShadow: "0 1px 0 rgba(255,255,255,0.35)" }}
+        >
+          Movie
+        </span>
+        <span
+          className={`font-[var(--font-display)] uppercase tracking-[0.14em] text-black/85 ${s.text}`}
+          style={{ textShadow: "0 1px 0 rgba(255,255,255,0.35)" }}
+        >
+          Club
+        </span>
+      </div>
+    </div>
+  );
+}
