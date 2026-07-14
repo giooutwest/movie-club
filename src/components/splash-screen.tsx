@@ -1,12 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+
+function isRunningStandalone() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+  );
+}
+
+// Magic-link emails always open in a regular browser tab, never inside the
+// installed home-screen app, and iOS gives a home-screen web app separate
+// storage from Safari -- gating these would make it impossible to ever log
+// in. Only the main app experience is gated behind "add to home screen".
+const EXEMPT_PATHS = [
+  "/add-to-home-screen",
+  "/login",
+  "/auth/callback",
+  "/welcome",
+];
 
 export function SplashScreen() {
+  const pathname = usePathname();
+  const router = useRouter();
   const [visible, setVisible] = useState(false);
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
+    if (EXEMPT_PATHS.some((path) => pathname.startsWith(path))) return;
+
+    if (!isRunningStandalone()) {
+      router.replace("/add-to-home-screen");
+      return;
+    }
+
     if (sessionStorage.getItem("movie-club-splash-shown")) return;
     sessionStorage.setItem("movie-club-splash-shown", "1");
     setVisible(true);
@@ -17,7 +45,7 @@ export function SplashScreen() {
       clearTimeout(fadeTimer);
       clearTimeout(hideTimer);
     };
-  }, []);
+  }, [pathname, router]);
 
   if (!visible) return null;
 

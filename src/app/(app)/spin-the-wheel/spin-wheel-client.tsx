@@ -25,15 +25,22 @@ interface SessionRow {
   status: string;
 }
 
+interface Winner {
+  pickId: string;
+  seed: number;
+}
+
 export function SpinWheelClient({
   currentUserId,
   members,
   initialSession,
+  initialWinner,
   pendingPicks,
 }: {
   currentUserId: string;
   members: Member[];
   initialSession: SessionRow | null;
+  initialWinner: Winner | null;
   pendingPicks: PendingPick[];
 }) {
   const router = useRouter();
@@ -41,16 +48,18 @@ export function SpinWheelClient({
 
   const [session, setSession] = useState(initialSession);
   const [readyMap, setReadyMap] = useState<Record<string, boolean>>({});
-  const [winner, setWinner] = useState<{
-    pickId: string;
-    seed: number;
-  } | null>(null);
+  const [winner, setWinner] = useState<Winner | null>(initialWinner);
+  // A winner is already decided when this page loads (e.g. reopening the
+  // app mid-session) -- jump straight to the result instead of defaulting
+  // to "gathering" and flashing over once the client re-fetches the same
+  // data a moment later.
   const [stage, setStage] = useState<
     "gathering" | "spinning" | "result" | "rating"
-  >("gathering");
+  >(initialWinner ? "result" : "gathering");
   const [ratedProfiles, setRatedProfiles] = useState<Set<string>>(new Set());
   const [spinningAgain, setSpinningAgain] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [endingSession, setEndingSession] = useState(false);
 
   // Load existing ready state + subscribe to realtime updates for this session.
   useEffect(() => {
@@ -65,17 +74,6 @@ export function SpinWheelClient({
       .then(({ data }) => {
         if (cancelled || !data) return;
         setReadyMap(Object.fromEntries(data.map((r) => [r.profile_id, r.ready])));
-      });
-
-    supabase
-      .from("session_result")
-      .select("winning_pick_id, seed")
-      .eq("session_id", session.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (cancelled || !data) return;
-        setWinner({ pickId: data.winning_pick_id, seed: data.seed });
-        setStage("spinning");
       });
 
     supabase
@@ -250,15 +248,14 @@ export function SpinWheelClient({
     setSpinningAgain(false);
   }
 
-  async function closeSession() {
+  async function endSession() {
     if (!session) return;
-    await supabase
-      .from("sessions")
-      .update({ status: "closed" })
-      .eq("id", session.id);
+    setEndingSession(true);
+    await supabase.rpc("close_session", { p_session_id: session.id });
     setSession(null);
     setStage("gathering");
     setWinner(null);
+    setEndingSession(false);
     router.refresh();
   }
 
@@ -328,6 +325,13 @@ export function SpinWheelClient({
             {starting ? "Starting..." : "Start"}
           </button>
         )}
+        <button
+          onClick={endSession}
+          disabled={endingSession}
+          className="text-sm text-neutral-500 transition-colors hover:text-neutral-300 disabled:opacity-50"
+        >
+          Cancel
+        </button>
       </div>
     );
   }
@@ -390,6 +394,13 @@ export function SpinWheelClient({
             Log
           </button>
         </div>
+        <button
+          onClick={endSession}
+          disabled={endingSession}
+          className="text-sm text-neutral-500 transition-colors hover:text-neutral-300 disabled:opacity-50"
+        >
+          {endingSession ? "Ending..." : "Start over"}
+        </button>
       </div>
     );
   }
@@ -430,14 +441,17 @@ export function SpinWheelClient({
             </li>
           ))}
         </ul>
-        {ratedProfiles.size === members.length && (
-          <button
-            onClick={closeSession}
-            className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-100 transition-all hover:bg-neutral-800 active:scale-[0.98]"
-          >
-            Finish
-          </button>
-        )}
+        <button
+          onClick={endSession}
+          disabled={endingSession}
+          className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-100 transition-all hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50"
+        >
+          {endingSession
+            ? "Ending..."
+            : ratedProfiles.size === members.length
+              ? "Finish"
+              : "Start over"}
+        </button>
       </div>
     );
   }
