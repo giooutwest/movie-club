@@ -308,21 +308,27 @@ export function SpinWheelClient({
             </li>
           ))}
         </ul>
-        {!readyMap[currentUserId] && (
+        {!readyMap[currentUserId] ? (
           <button
             onClick={markReady}
             className="rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98]"
           >
             I&apos;m ready
           </button>
-        )}
-        {allReady && (
+        ) : allReady ? (
           <button
             onClick={startSpin}
             disabled={starting}
             className="animate-scale-in rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
           >
             {starting ? "Starting..." : "Start"}
+          </button>
+        ) : (
+          <button
+            disabled
+            className="cursor-default rounded-md bg-neutral-900 px-6 py-3 text-sm font-bold uppercase tracking-wide text-neutral-500"
+          >
+            Waiting...
           </button>
         )}
         <button
