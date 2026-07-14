@@ -15,14 +15,18 @@ export default function Icon() {
           justifyContent: "center",
           borderRadius: "999px",
           background:
-            "linear-gradient(155deg, #ff6fb8 0%, #ff2f92 42%, #d4127a 100%)",
+            "linear-gradient(155deg, #ff7ec0 0%, #ff2f92 45%, #c40f6f 100%)",
         }}
       >
         <span
           style={{
-            fontSize: 14,
+            display: "flex",
+            transform: "rotate(-13deg)",
+            fontSize: 13,
             fontWeight: 700,
-            color: "rgba(0,0,0,0.75)",
+            color: "rgba(120, 12, 66, 0.6)",
+            textShadow:
+              "1px 1px 0.5px rgba(255,255,255,0.7), -1px -1px 1px rgba(60,6,33,0.6)",
           }}
         >
           MC

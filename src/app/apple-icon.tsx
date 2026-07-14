@@ -18,36 +18,34 @@ export default function AppleIcon() {
       >
         <div
           style={{
-            width: "82%",
-            height: "82%",
+            width: "84%",
+            height: "84%",
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            overflow: "hidden",
             borderRadius: "999px",
             background:
-              "linear-gradient(155deg, #ff6fb8 0%, #ff2f92 42%, #d4127a 100%)",
+              "linear-gradient(155deg, #ff7ec0 0%, #ff2f92 45%, #c40f6f 100%)",
+            boxShadow:
+              "inset 0 6px 10px rgba(255,255,255,0.4), inset 0 -10px 16px rgba(0,0,0,0.35)",
           }}
         >
           <span
             style={{
-              fontSize: 30,
+              display: "flex",
+              whiteSpace: "nowrap",
+              transform: "rotate(-13deg)",
+              fontSize: 22,
               fontWeight: 700,
-              letterSpacing: 2,
-              color: "rgba(0,0,0,0.8)",
+              letterSpacing: 1,
+              textTransform: "uppercase",
+              color: "rgba(120, 12, 66, 0.65)",
+              textShadow:
+                "1px 1px 0.5px rgba(255,255,255,0.75), -1px -1px 1px rgba(60,6,33,0.7)",
             }}
           >
-            MOVIE
-          </span>
-          <span
-            style={{
-              fontSize: 30,
-              fontWeight: 700,
-              letterSpacing: 2,
-              color: "rgba(0,0,0,0.8)",
-            }}
-          >
-            CLUB
+            Movie Club
           </span>
         </div>
       </div>

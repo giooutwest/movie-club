@@ -27,6 +27,11 @@ export default async function RankingsPage() {
         : null;
       return { ...pick, avg, count: scores.length };
     })
+    // A pick is marked "watched" the moment the wheel lands on it (or the
+    // instant someone rates it directly) -- only show it here once at least
+    // one person has actually rated it, so it doesn't appear "randomly"
+    // before anyone's weighed in.
+    .filter((pick) => pick.count > 0)
     .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
 
   if (ranked.length === 0) {
