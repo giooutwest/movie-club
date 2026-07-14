@@ -25,7 +25,7 @@ interface SessionRow {
   status: string;
 }
 
-export function PickNightClient({
+export function SpinWheelClient({
   currentUserId,
   members,
   initialSession,
@@ -50,6 +50,7 @@ export function PickNightClient({
   >("gathering");
   const [ratedProfiles, setRatedProfiles] = useState<Set<string>>(new Set());
   const [spinningAgain, setSpinningAgain] = useState(false);
+  const [starting, setStarting] = useState(false);
 
   // Load existing ready state + subscribe to realtime updates for this session.
   useEffect(() => {
@@ -87,7 +88,7 @@ export function PickNightClient({
       });
 
     const channel = supabase
-      .channel(`pick-night-${session.id}`)
+      .channel(`spin-the-wheel-${session.id}`)
       .on(
         "postgres_changes",
         {
@@ -118,6 +119,7 @@ export function PickNightClient({
             return { pickId: row.winning_pick_id, seed: row.seed };
           });
           setSpinningAgain(false);
+          setStarting(false);
           setStage("spinning");
         }
       )
@@ -140,6 +142,7 @@ export function PickNightClient({
             return { pickId: row.winning_pick_id, seed: row.seed };
           });
           setSpinningAgain(false);
+          setStarting(false);
           setStage("spinning");
         }
       )
@@ -164,7 +167,7 @@ export function PickNightClient({
     };
   }, [session, supabase]);
 
-  async function startPickNight() {
+  async function startGathering() {
     const { data: newSession, error } = await supabase
       .from("sessions")
       .insert({ status: "gathering" })
@@ -195,6 +198,31 @@ export function PickNightClient({
       .eq("profile_id", currentUserId);
   }
 
+  async function startSpin() {
+    if (!session) return;
+    setStarting(true);
+    const { error } = await supabase.rpc("attempt_decide_winner", {
+      p_session_id: session.id,
+    });
+    if (error) {
+      setStarting(false);
+      return;
+    }
+    // Don't rely solely on the realtime round-trip for the client that
+    // triggered this -- fetch the fresh result directly so the UI is
+    // guaranteed to update even if the postgres_changes event lags.
+    const { data } = await supabase
+      .from("session_result")
+      .select("winning_pick_id, seed")
+      .eq("session_id", session.id)
+      .maybeSingle();
+    if (data) {
+      setWinner({ pickId: data.winning_pick_id, seed: data.seed });
+      setStage("spinning");
+    }
+    setStarting(false);
+  }
+
   async function spinAgain() {
     if (!session) return;
     setSpinningAgain(true);
@@ -205,9 +233,6 @@ export function PickNightClient({
       setSpinningAgain(false);
       return;
     }
-    // Don't rely solely on the realtime round-trip for the client that
-    // triggered this -- fetch the fresh result directly so the UI is
-    // guaranteed to update even if the postgres_changes event lags.
     const { data } = await supabase
       .from("session_result")
       .select("winning_pick_id, seed")
@@ -245,16 +270,16 @@ export function PickNightClient({
     return (
       <div className="flex flex-col items-center gap-4 py-16">
         <h1 className="text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
-          No pick night in progress
+          No spin in progress
         </h1>
         <p className="text-sm text-neutral-400">
           Start one and everyone can ready up together.
         </p>
         <button
-          onClick={startPickNight}
+          onClick={startGathering}
           className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98]"
         >
-          Start pick night
+          Start
         </button>
       </div>
     );
@@ -278,7 +303,7 @@ export function PickNightClient({
               </span>
               <span
                 className={`text-xs font-medium ${
-                  readyMap[m.profileId] ? "text-[var(--pink)]" : "text-neutral-500"
+                  readyMap[m.profileId] ? "text-green-400" : "text-neutral-500"
                 }`}
               >
                 {readyMap[m.profileId] ? "Ready" : "Waiting"}
@@ -295,9 +320,13 @@ export function PickNightClient({
           </button>
         )}
         {allReady && (
-          <p className="text-sm text-neutral-400">
-            Everyone&apos;s ready — spinning the wheel...
-          </p>
+          <button
+            onClick={startSpin}
+            disabled={starting}
+            className="animate-scale-in rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+          >
+            {starting ? "Starting..." : "Start"}
+          </button>
         )}
       </div>
     );
@@ -406,7 +435,7 @@ export function PickNightClient({
             onClick={closeSession}
             className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-100 transition-all hover:bg-neutral-800 active:scale-[0.98]"
           >
-            Finish pick night
+            Finish
           </button>
         )}
       </div>

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import { PickNightClient } from "./pick-night-client";
+import { SpinWheelClient } from "./spin-wheel-client";
 
-export default async function PickNightPage() {
+export default async function SpinTheWheelPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -48,7 +48,7 @@ export default async function PickNightPage() {
   }
 
   return (
-    <PickNightClient
+    <SpinWheelClient
       currentUserId={user!.id}
       members={
         (members ?? []).map((m) => ({

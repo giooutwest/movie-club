@@ -1,7 +1,7 @@
 # Movie Club
 
 Weekly movie club app: a communal board of movie picks (pulled from TMDB), a
-synchronized "ready up + spin the wheel" pick-night flow, and post-watch
+synchronized "ready up + spin the wheel" flow, and post-watch
 ratings/reviews with a home page ranking.
 
 ## Setup
@@ -54,10 +54,10 @@ Open [http://localhost:3000](http://localhost:3000).
 ## How it works
 
 - **Picks** (`/picks`) — search TMDB and add movies to the shared pool.
-- **Pick Night** (`/pick-night`) — everyone presses "I'm ready"; the instant
-  the last person does, a Postgres function atomically picks a winner from
-  the pending picks and every client's wheel animates to the same result via
-  Supabase Realtime.
+- **Spin the Wheel** (`/spin-the-wheel`) — everyone presses "I'm ready"; once
+  everyone has, a "Start" button appears, and whoever clicks it triggers a
+  Postgres function that atomically picks a winner from the pending picks —
+  every client's wheel animates to the same result via Supabase Realtime.
 - **Rating** — after the spin, each member scores the film and writes a
   5+ word review.
 - **Rankings** (`/`) — watched films ranked by average score; click through

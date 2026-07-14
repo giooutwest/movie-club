@@ -29,7 +29,7 @@ export function ReelFab() {
           <button
             onClick={() => {
               setOpen(false);
-              router.push("/pick-night");
+              router.push("/spin-the-wheel");
             }}
             className="animate-fade-up stagger-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition-all hover:bg-neutral-800 active:scale-95"
           >

@@ -41,8 +41,8 @@ export default async function RankingsPage() {
             picks
           </Link>{" "}
           and run a{" "}
-          <Link href="/pick-night" className="text-[var(--pink)] transition-colors hover:brightness-125">
-            pick night
+          <Link href="/spin-the-wheel" className="text-[var(--pink)] transition-colors hover:brightness-125">
+            spin the wheel
           </Link>
           .
         </p>
