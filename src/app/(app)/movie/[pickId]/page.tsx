@@ -70,12 +70,18 @@ export default async function MovieDetailPage({
           <div className="h-[240px] w-40 shrink-0 self-center rounded-md bg-neutral-900 sm:h-[300px] sm:w-[200px] sm:self-start" />
         )}
         <div className="flex flex-col gap-3 text-center sm:text-left">
-          <h1 className="text-2xl font-[var(--font-display)] uppercase leading-tight tracking-wide text-neutral-100 sm:text-3xl">
-            {pick.title}{" "}
-            {pick.release_year && (
-              <span className="text-neutral-500">({pick.release_year})</span>
+          <div>
+            <h1 className="text-2xl font-[var(--font-display)] uppercase leading-tight tracking-wide text-neutral-100 sm:text-3xl">
+              {pick.title}
+            </h1>
+            {(details?.genres?.length || pick.release_year) && (
+              <p className="mt-1 text-sm uppercase tracking-wide text-neutral-500">
+                {details?.genres?.map((g) => g.name).join(", ")}
+                {details?.genres?.length && pick.release_year ? " · " : ""}
+                {pick.release_year}
+              </p>
             )}
-          </h1>
+          </div>
           {avg !== null && (
             <p className="text-lg font-semibold text-[var(--pink)]">
               {avg.toFixed(1)} average
@@ -86,7 +92,7 @@ export default async function MovieDetailPage({
           )}
           {details && (
             <>
-              <p className="max-w-xl text-sm leading-relaxed text-neutral-400">
+              <p className="max-w-xl text-justify text-sm leading-relaxed text-neutral-400">
                 {details.overview}
               </p>
               {details.credits?.cast?.length > 0 && (

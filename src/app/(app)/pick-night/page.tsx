@@ -20,10 +20,32 @@ export default async function PickNightPage() {
     .limit(1)
     .maybeSingle();
 
-  const { data: pendingPicks } = await supabase
+  const { data: pendingPicksData } = await supabase
     .from("picks")
-    .select("id, title, poster_path")
+    .select("id, title, poster_path, release_year")
     .eq("status", "pending");
+
+  const pendingPicks = pendingPicksData ?? [];
+
+  // A winner already picked (e.g. the page was reloaded after deciding)
+  // flips that pick to 'watched', which drops it out of the query above --
+  // make sure it's still available so the wheel/result screen can show it.
+  if (session) {
+    const { data: result } = await supabase
+      .from("session_result")
+      .select("winning_pick_id")
+      .eq("session_id", session.id)
+      .maybeSingle();
+
+    if (result && !pendingPicks.some((p) => p.id === result.winning_pick_id)) {
+      const { data: winningPick } = await supabase
+        .from("picks")
+        .select("id, title, poster_path, release_year")
+        .eq("id", result.winning_pick_id)
+        .single();
+      if (winningPick) pendingPicks.push(winningPick);
+    }
+  }
 
   return (
     <PickNightClient

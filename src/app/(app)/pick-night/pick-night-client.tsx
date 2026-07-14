@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { posterUrl } from "@/lib/tmdb/client";
 import { Wheel } from "./wheel";
 import { RatingForm } from "./rating-form";
 
@@ -15,6 +17,7 @@ interface PendingPick {
   id: string;
   title: string;
   poster_path: string | null;
+  release_year: number | null;
 }
 
 interface SessionRow {
@@ -42,10 +45,11 @@ export function PickNightClient({
     pickId: string;
     seed: number;
   } | null>(null);
-  const [stage, setStage] = useState<"gathering" | "spinning" | "rating">(
-    "gathering"
-  );
+  const [stage, setStage] = useState<
+    "gathering" | "spinning" | "result" | "rating"
+  >("gathering");
   const [ratedProfiles, setRatedProfiles] = useState<Set<string>>(new Set());
+  const [spinningAgain, setSpinningAgain] = useState(false);
 
   // Load existing ready state + subscribe to realtime updates for this session.
   useEffect(() => {
@@ -107,7 +111,13 @@ export function PickNightClient({
         },
         (payload) => {
           const row = payload.new as { winning_pick_id: string; seed: number };
-          setWinner({ pickId: row.winning_pick_id, seed: row.seed });
+          setWinner((prev) => {
+            if (prev && prev.pickId !== row.winning_pick_id) {
+              setRatedProfiles(new Set());
+            }
+            return { pickId: row.winning_pick_id, seed: row.seed };
+          });
+          setSpinningAgain(false);
           setStage("spinning");
         }
       )
@@ -163,6 +173,15 @@ export function PickNightClient({
       .eq("profile_id", currentUserId);
   }
 
+  async function spinAgain() {
+    if (!session) return;
+    setSpinningAgain(true);
+    const { error } = await supabase.rpc("spin_again", {
+      p_session_id: session.id,
+    });
+    if (error) setSpinningAgain(false);
+  }
+
   async function closeSession() {
     if (!session) return;
     await supabase
@@ -190,7 +209,7 @@ export function PickNightClient({
         </p>
         <button
           onClick={startPickNight}
-          className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition hover:brightness-110"
+          className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98]"
         >
           Start pick night
         </button>
@@ -201,7 +220,7 @@ export function PickNightClient({
   if (stage === "gathering") {
     const allReady = members.every((m) => readyMap[m.profileId]);
     return (
-      <div className="flex flex-col items-center gap-6 py-12">
+      <div className="animate-fade-up flex flex-col items-center gap-6 py-12">
         <h1 className="text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
           Waiting for everyone to be ready
         </h1>
@@ -209,7 +228,7 @@ export function PickNightClient({
           {members.map((m) => (
             <li
               key={m.profileId}
-              className="flex w-64 items-center justify-between rounded-md border border-neutral-900 px-3 py-2"
+              className="flex w-64 items-center justify-between rounded-md border border-neutral-900 px-3 py-2 transition-colors hover:border-neutral-700"
             >
               <span className="text-sm text-neutral-200">
                 {m.displayName}
@@ -227,7 +246,7 @@ export function PickNightClient({
         {!readyMap[currentUserId] && (
           <button
             onClick={markReady}
-            className="rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition hover:brightness-110"
+            className="rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98]"
           >
             I&apos;m ready
           </button>
@@ -245,14 +264,60 @@ export function PickNightClient({
     return (
       <div className="flex flex-col items-center gap-6 py-8">
         <h1 className="text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
-          Spinning the wheel...
+          {spinningAgain ? "Spinning again..." : "Spinning the wheel..."}
         </h1>
         <Wheel
+          key={`${winner.pickId}-${winner.seed}`}
           segments={pendingPicks.map((p) => ({ id: p.id, title: p.title }))}
           winningId={winner.pickId}
           seed={winner.seed}
-          onSettled={() => setStage("rating")}
+          onSettled={() => setStage("result")}
         />
+      </div>
+    );
+  }
+
+  if (stage === "result" && winner) {
+    return (
+      <div className="animate-scale-in flex flex-col items-center gap-6 py-8 text-center">
+        <p className="text-sm uppercase tracking-wide text-neutral-500">
+          Tonight&apos;s pick
+        </p>
+        {posterUrl(winningPick?.poster_path ?? null, "w342") ? (
+          <Image
+            src={posterUrl(winningPick!.poster_path, "w342")!}
+            alt={winningPick?.title ?? "the film"}
+            width={200}
+            height={300}
+            className="rounded-md shadow-[0_16px_40px_rgba(255,47,146,0.25)]"
+            priority
+          />
+        ) : (
+          <div className="h-[300px] w-[200px] rounded-md bg-neutral-900" />
+        )}
+        <h1 className="text-2xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
+          {winningPick?.title ?? "the film"}
+          {winningPick?.release_year && (
+            <span className="ml-2 text-neutral-500">
+              ({winningPick.release_year})
+            </span>
+          )}
+        </h1>
+        <div className="flex gap-3">
+          <button
+            onClick={spinAgain}
+            disabled={spinningAgain}
+            className="rounded-md border border-neutral-700 px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-neutral-100 transition-all hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50"
+          >
+            Spin again
+          </button>
+          <button
+            onClick={() => setStage("rating")}
+            className="rounded-md bg-[var(--pink)] px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98]"
+          >
+            Log
+          </button>
+        </div>
       </div>
     );
   }
@@ -260,7 +325,7 @@ export function PickNightClient({
   if (stage === "rating" && winner) {
     const iRated = ratedProfiles.has(currentUserId);
     return (
-      <div className="flex flex-col items-center gap-6 py-8">
+      <div className="animate-fade-up flex flex-col items-center gap-6 py-8">
         <h1 className="text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
           Tonight&apos;s pick: {winningPick?.title ?? "the film"}
         </h1>
@@ -283,7 +348,7 @@ export function PickNightClient({
           {members.map((m) => (
             <li
               key={m.profileId}
-              className={`rounded-full px-3 py-1 text-xs ${
+              className={`rounded-full px-3 py-1 text-xs transition-colors ${
                 ratedProfiles.has(m.profileId)
                   ? "bg-[var(--pink)] text-black"
                   : "bg-neutral-900 text-neutral-500"
@@ -296,7 +361,7 @@ export function PickNightClient({
         {ratedProfiles.size === members.length && (
           <button
             onClick={closeSession}
-            className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-100 transition hover:bg-neutral-800"
+            className="rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-100 transition-all hover:bg-neutral-800 active:scale-[0.98]"
           >
             Finish pick night
           </button>

@@ -69,7 +69,7 @@ export function Wheel({
           {segments.map((s, i) => (
             <div
               key={s.id}
-              className="absolute left-1/2 top-1/2 w-32 origin-left text-[11px] font-bold uppercase tracking-wide text-white"
+              className="absolute left-1/2 top-1/2 w-32 origin-left -translate-y-1/2 text-[11px] font-bold uppercase tracking-wide text-white"
               style={{
                 transform: `rotate(${i * segmentAngle + segmentAngle / 2}deg)`,
                 textShadow: "0 1px 2px rgba(0,0,0,0.8)",
