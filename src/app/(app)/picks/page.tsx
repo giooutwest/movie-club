@@ -8,7 +8,8 @@ interface PendingPick {
   title: string;
   poster_path: string | null;
   release_year: number | null;
-  added_by: string;
+  added_by: string | null;
+  added_by_name: string | null;
   profiles: { display_name: string } | null;
 }
 
@@ -17,7 +18,7 @@ export default async function PicksPage() {
   const { data } = await supabase
     .from("picks")
     .select(
-      "id, title, poster_path, release_year, added_by, profiles(display_name)"
+      "id, title, poster_path, release_year, added_by, added_by_name, profiles(display_name)"
     )
     .eq("status", "pending")
     .order("created_at", { ascending: false })
@@ -50,7 +51,8 @@ export default async function PicksPage() {
               )}
             </p>
             <p className="text-xs text-neutral-500">
-              picked by {pick.profiles?.display_name ?? "someone"}
+              picked by{" "}
+              {pick.profiles?.display_name ?? pick.added_by_name ?? "someone"}
             </p>
           </div>
         ))}
