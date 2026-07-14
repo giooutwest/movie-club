@@ -33,16 +33,16 @@ export function InviteForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="friend@example.com"
-        className="flex-1 rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-[var(--pink)] focus:outline-none"
+        className="flex-1 rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 transition-colors focus:border-[var(--pink)] focus:outline-none"
       />
       <button
         type="submit"
         disabled={status === "sending"}
-        className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition hover:brightness-110 disabled:opacity-50"
+        className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
       >
         {status === "sending" ? "Inviting..." : "Invite"}
       </button>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="animate-fade-in text-sm text-red-400">{error}</p>}
     </form>
   );
 }

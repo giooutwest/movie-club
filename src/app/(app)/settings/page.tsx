@@ -15,7 +15,7 @@ export default async function SettingsPage() {
     .returns<MemberRow[]>();
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="animate-fade-up flex flex-col gap-8">
       <div>
         <h1 className="mb-4 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
           Club members
@@ -24,12 +24,16 @@ export default async function SettingsPage() {
           {(members ?? []).map((m) => (
             <li
               key={m.profile_id}
-              className="flex items-center justify-between rounded-md border border-neutral-900 px-3 py-2"
+              className="flex items-center justify-between rounded-md border border-neutral-900 px-3 py-2 transition-colors hover:border-neutral-700"
             >
               <span className="text-sm text-neutral-200">
                 {m.profiles?.display_name ?? "member"}
               </span>
-              <span className="text-xs text-neutral-500">
+              <span
+                className={`text-xs ${
+                  m.active ? "text-[var(--pink)]" : "text-neutral-500"
+                }`}
+              >
                 {m.active ? "active" : "inactive"}
               </span>
             </li>
@@ -37,7 +41,7 @@ export default async function SettingsPage() {
         </ul>
       </div>
 
-      <div>
+      <div className="animate-fade-up stagger-1">
         <h2 className="mb-3 text-lg font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
           Invite a friend
         </h2>

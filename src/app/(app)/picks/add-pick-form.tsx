@@ -53,23 +53,23 @@ export function AddPickForm() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search TMDB for a movie..."
-          className="flex-1 rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-[var(--pink)] focus:outline-none"
+          className="flex-1 rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 transition-colors focus:border-[var(--pink)] focus:outline-none"
         />
         <button
           type="submit"
           disabled={searching}
-          className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition hover:brightness-110 disabled:opacity-50"
+          className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
         >
           {searching ? "Searching..." : "Search"}
         </button>
       </form>
 
       {results.length > 0 && (
-        <div className="mt-4 flex flex-col gap-2 rounded-md border border-neutral-900 p-2">
+        <div className="animate-fade-up mt-4 flex flex-col gap-2 rounded-md border border-neutral-900 p-2">
           {results.slice(0, 8).map((movie) => (
             <div
               key={movie.id}
-              className="flex items-center gap-3 rounded-md p-2 hover:bg-neutral-900"
+              className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-neutral-900"
             >
               {posterUrl(movie.poster_path, "w200") ? (
                 <Image
@@ -91,7 +91,7 @@ export function AddPickForm() {
               <button
                 onClick={() => addPick(movie)}
                 disabled={addingId === movie.id}
-                className="rounded-md border border-[var(--pink)] px-3 py-1 text-xs font-medium text-[var(--pink)] transition hover:bg-[var(--pink)] hover:text-black disabled:opacity-50"
+                className="rounded-md border border-[var(--pink)] px-3 py-1 text-xs font-medium text-[var(--pink)] transition-all hover:bg-[var(--pink)] hover:text-black active:scale-95 disabled:opacity-50"
               >
                 {addingId === movie.id ? "Adding..." : "Add pick"}
               </button>

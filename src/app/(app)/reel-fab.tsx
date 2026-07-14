@@ -31,7 +31,7 @@ export function ReelFab() {
               setOpen(false);
               router.push("/pick-night");
             }}
-            className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition hover:bg-neutral-800"
+            className="animate-fade-up stagger-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition-all hover:bg-neutral-800 active:scale-95"
           >
             🎡 Spin the wheel
           </button>
@@ -40,7 +40,7 @@ export function ReelFab() {
               setOpen(false);
               router.push("/picks");
             }}
-            className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition hover:bg-neutral-800"
+            className="animate-fade-up stagger-1 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition-all hover:bg-neutral-800 active:scale-95"
           >
             🎬 Log a movie
           </button>
@@ -49,8 +49,8 @@ export function ReelFab() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Quick actions"
-        className={`flex h-14 w-14 items-center justify-center rounded-full text-black shadow-xl transition ${
-          open ? "rotate-45" : ""
+        className={`flex h-14 w-14 items-center justify-center rounded-full text-black shadow-xl transition-transform duration-300 active:scale-90 ${
+          open ? "rotate-45" : "hover:scale-105"
         }`}
         style={{
           background:

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMovieDetails, posterUrl } from "@/lib/tmdb/client";
@@ -47,40 +48,50 @@ export default async function MovieDetailPage({
       : null;
 
   return (
-    <div>
-      <div className="flex gap-6">
+    <div className="animate-fade-up pb-16">
+      <Link
+        href="/picks"
+        className="mb-6 inline-flex items-center gap-1 text-sm text-neutral-500 transition-colors hover:text-[var(--pink)]"
+      >
+        ← Back to picks
+      </Link>
+
+      <div className="flex flex-col gap-6 sm:flex-row">
         {posterUrl(pick.poster_path, "w500") ? (
           <Image
             src={posterUrl(pick.poster_path, "w500")!}
             alt={pick.title}
             width={200}
             height={300}
-            className="rounded-md"
+            className="w-40 shrink-0 self-center rounded-md shadow-[0_12px_30px_rgba(0,0,0,0.6)] sm:w-[200px] sm:self-start"
+            priority
           />
         ) : (
-          <div className="h-[300px] w-[200px] rounded-md bg-neutral-800" />
+          <div className="h-[240px] w-40 shrink-0 self-center rounded-md bg-neutral-900 sm:h-[300px] sm:w-[200px] sm:self-start" />
         )}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
+        <div className="flex flex-col gap-3 text-center sm:text-left">
+          <h1 className="text-2xl font-[var(--font-display)] uppercase leading-tight tracking-wide text-neutral-100 sm:text-3xl">
             {pick.title}{" "}
             {pick.release_year && (
               <span className="text-neutral-500">({pick.release_year})</span>
             )}
           </h1>
           {avg !== null && (
-            <p className="text-lg font-medium text-neutral-100">
-              {avg.toFixed(1)} average · {ratings!.length} rating
-              {ratings!.length === 1 ? "" : "s"}
+            <p className="text-lg font-semibold text-[var(--pink)]">
+              {avg.toFixed(1)} average
+              <span className="ml-2 text-sm font-normal text-neutral-500">
+                {ratings!.length} rating{ratings!.length === 1 ? "" : "s"}
+              </span>
             </p>
           )}
           {details && (
             <>
-              <p className="max-w-xl text-sm text-neutral-400">
+              <p className="max-w-xl text-sm leading-relaxed text-neutral-400">
                 {details.overview}
               </p>
               {details.credits?.cast?.length > 0 && (
-                <p className="text-sm text-neutral-500">
-                  Cast:{" "}
+                <p className="text-sm leading-relaxed text-neutral-500">
+                  <span className="text-neutral-400">Cast: </span>
                   {details.credits.cast
                     .slice(0, 6)
                     .map((c) => c.name)
@@ -93,12 +104,12 @@ export default async function MovieDetailPage({
       </div>
 
       {!hasRated && user && (
-        <>
-          <h2 className="mb-3 mt-10 text-lg font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
+        <div className="animate-fade-up stagger-1 mt-10 rounded-lg border border-neutral-900 bg-neutral-950/60 p-5">
+          <h2 className="mb-4 text-lg font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
             Rate it
           </h2>
           <RateForm pickId={pick.id} />
-        </>
+        </div>
       )}
 
       <h2 className="mb-3 mt-10 text-lg font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
@@ -108,18 +119,20 @@ export default async function MovieDetailPage({
         {(ratings ?? []).map((r, i) => (
           <div
             key={i}
-            className="rounded-md border border-neutral-900 p-4"
+            className={`animate-fade-up rounded-md border border-neutral-900 p-4 transition-colors hover:border-neutral-700 stagger-${Math.min(i + 1, 4)}`}
           >
             <div className="mb-1 flex items-center justify-between">
               <span className="text-sm font-medium text-neutral-100">
                 {r.profiles?.display_name ?? "member"}
               </span>
-              <span className="text-sm font-semibold text-neutral-100">
+              <span className="text-sm font-semibold text-[var(--pink)]">
                 {r.score.toFixed(1)}
               </span>
             </div>
             {r.review_text && (
-              <p className="text-sm text-neutral-400">{r.review_text}</p>
+              <p className="text-sm leading-relaxed text-neutral-400">
+                {r.review_text}
+              </p>
             )}
           </div>
         ))}

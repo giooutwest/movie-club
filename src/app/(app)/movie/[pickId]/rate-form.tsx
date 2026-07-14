@@ -41,7 +41,10 @@ export function RateForm({ pickId }: { pickId: string }) {
   return (
     <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-col gap-4">
       <label className="flex flex-col gap-2">
-        <span className="text-sm text-neutral-300">Score: {score.toFixed(1)}</span>
+        <span className="text-sm text-neutral-300">
+          Score:{" "}
+          <span className="font-semibold text-[var(--pink)]">{score.toFixed(1)}</span>
+        </span>
         <input
           type="range"
           min={0}
@@ -49,7 +52,7 @@ export function RateForm({ pickId }: { pickId: string }) {
           step={0.5}
           value={score}
           onChange={(e) => setScore(Number(e.target.value))}
-          className="accent-[var(--pink)]"
+          className="accent-[var(--pink)] transition-transform active:scale-y-125"
         />
       </label>
       <label className="flex flex-col gap-2">
@@ -58,15 +61,15 @@ export function RateForm({ pickId }: { pickId: string }) {
           value={review}
           onChange={(e) => setReview(e.target.value)}
           rows={3}
-          className="rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-[var(--pink)] focus:outline-none"
+          className="rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 transition-colors focus:border-[var(--pink)] focus:outline-none"
           placeholder="What did you think? (optional)"
         />
       </label>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="animate-fade-in text-sm text-red-400">{error}</p>}
       <button
         type="submit"
         disabled={submitting}
-        className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition hover:brightness-110 disabled:opacity-50"
+        className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
       >
         {submitting ? "Submitting..." : "Submit rating"}
       </button>

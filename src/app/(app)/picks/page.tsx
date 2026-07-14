@@ -38,12 +38,15 @@ export default async function PicksPage() {
   const sortedNames = [...groups.keys()].sort((a, b) => a.localeCompare(b));
 
   return (
-    <div>
+    <div className="animate-fade-up">
       <h1 className="mb-6 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">Picks</h1>
       <AddPickForm />
       <div className="mt-8 flex flex-col gap-10">
-        {sortedNames.map((name) => (
-          <div key={name}>
+        {sortedNames.map((name, groupIndex) => (
+          <div
+            key={name}
+            className={`animate-fade-up stagger-${Math.min(groupIndex + 1, 4)}`}
+          >
             <h2 className="mb-3 text-sm font-[var(--font-display)] uppercase tracking-wide text-[var(--pink)]">
               {name}
             </h2>
@@ -52,20 +55,22 @@ export default async function PicksPage() {
                 <Link
                   key={pick.id}
                   href={`/movie/${pick.id}`}
-                  className="flex flex-col gap-2 transition hover:opacity-80"
+                  className="group flex flex-col gap-2"
                 >
                   {posterUrl(pick.poster_path, "w342") ? (
-                    <Image
-                      src={posterUrl(pick.poster_path, "w342")!}
-                      alt={pick.title}
-                      width={171}
-                      height={256}
-                      className="rounded-md"
-                    />
+                    <div className="overflow-hidden rounded-md shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-shadow duration-300 group-hover:shadow-[0_12px_28px_rgba(255,47,146,0.25)]">
+                      <Image
+                        src={posterUrl(pick.poster_path, "w342")!}
+                        alt={pick.title}
+                        width={171}
+                        height={256}
+                        className="transition-transform duration-300 ease-out group-hover:scale-105"
+                      />
+                    </div>
                   ) : (
                     <div className="aspect-[2/3] rounded-md bg-neutral-800" />
                   )}
-                  <p className="text-sm font-medium text-neutral-100">
+                  <p className="text-sm font-medium text-neutral-100 transition-colors group-hover:text-[var(--pink)]">
                     {pick.title}
                     {pick.release_year && (
                       <span className="ml-1 text-neutral-500">

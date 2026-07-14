@@ -31,17 +31,17 @@ export default async function RankingsPage() {
 
   if (ranked.length === 0) {
     return (
-      <div className="text-neutral-400">
+      <div className="animate-fade-up text-neutral-400">
         <h1 className="mb-2 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
           Rankings
         </h1>
         <p>
           No films watched yet. Add some{" "}
-          <Link href="/picks" className="underline">
+          <Link href="/picks" className="text-[var(--pink)] transition-colors hover:brightness-125">
             picks
           </Link>{" "}
           and run a{" "}
-          <Link href="/pick-night" className="underline">
+          <Link href="/pick-night" className="text-[var(--pink)] transition-colors hover:brightness-125">
             pick night
           </Link>
           .
@@ -51,18 +51,25 @@ export default async function RankingsPage() {
   }
 
   return (
-    <div>
+    <div className="animate-fade-up">
       <h1 className="mb-6 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
         Rankings
       </h1>
       <ol className="flex flex-col gap-2">
         {ranked.map((pick, i) => (
-          <li key={pick.id}>
+          <li
+            key={pick.id}
+            className={`animate-fade-up stagger-${Math.min(i + 1, 4)}`}
+          >
             <Link
               href={`/movie/${pick.id}`}
-              className="flex items-center gap-4 rounded-md border border-neutral-900 p-3 transition hover:border-neutral-700"
+              className="group flex items-center gap-4 rounded-md border border-neutral-900 p-3 transition-all duration-200 hover:border-neutral-700 hover:bg-neutral-950"
             >
-              <span className="w-6 text-right text-sm font-medium text-neutral-500">
+              <span
+                className={`w-6 text-right text-sm font-medium ${
+                  i === 0 ? "text-[var(--pink)]" : "text-neutral-500"
+                }`}
+              >
                 {i + 1}
               </span>
               {posterUrl(pick.poster_path, "w200") ? (
@@ -71,13 +78,13 @@ export default async function RankingsPage() {
                   alt={pick.title}
                   width={40}
                   height={60}
-                  className="rounded"
+                  className="rounded transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (
                 <div className="h-[60px] w-[40px] rounded bg-neutral-800" />
               )}
               <div className="flex-1">
-                <p className="text-sm font-medium text-neutral-100">
+                <p className="text-sm font-medium text-neutral-100 transition-colors group-hover:text-[var(--pink)]">
                   {pick.title}
                   {pick.release_year && (
                     <span className="ml-2 text-neutral-500">
@@ -89,7 +96,7 @@ export default async function RankingsPage() {
                   {pick.count} rating{pick.count === 1 ? "" : "s"}
                 </p>
               </div>
-              <span className="text-lg font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
+              <span className="text-lg font-[var(--font-display)] uppercase tracking-wide text-[var(--pink)]">
                 {pick.avg?.toFixed(1)}
               </span>
             </Link>
