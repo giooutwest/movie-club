@@ -124,6 +124,28 @@ export function PickNightClient({
       .on(
         "postgres_changes",
         {
+          event: "UPDATE",
+          schema: "public",
+          table: "session_result",
+          filter: `session_id=eq.${session.id}`,
+        },
+        (payload) => {
+          // spin_again updates the existing result row in place rather
+          // than inserting a new one.
+          const row = payload.new as { winning_pick_id: string; seed: number };
+          setWinner((prev) => {
+            if (prev && prev.pickId !== row.winning_pick_id) {
+              setRatedProfiles(new Set());
+            }
+            return { pickId: row.winning_pick_id, seed: row.seed };
+          });
+          setSpinningAgain(false);
+          setStage("spinning");
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
           event: "INSERT",
           schema: "public",
           table: "ratings",
@@ -179,7 +201,28 @@ export function PickNightClient({
     const { error } = await supabase.rpc("spin_again", {
       p_session_id: session.id,
     });
-    if (error) setSpinningAgain(false);
+    if (error) {
+      setSpinningAgain(false);
+      return;
+    }
+    // Don't rely solely on the realtime round-trip for the client that
+    // triggered this -- fetch the fresh result directly so the UI is
+    // guaranteed to update even if the postgres_changes event lags.
+    const { data } = await supabase
+      .from("session_result")
+      .select("winning_pick_id, seed")
+      .eq("session_id", session.id)
+      .maybeSingle();
+    if (data) {
+      setWinner((prev) => {
+        if (prev && prev.pickId !== data.winning_pick_id) {
+          setRatedProfiles(new Set());
+        }
+        return { pickId: data.winning_pick_id, seed: data.seed };
+      });
+      setStage("spinning");
+    }
+    setSpinningAgain(false);
   }
 
   async function closeSession() {
@@ -309,7 +352,7 @@ export function PickNightClient({
             disabled={spinningAgain}
             className="rounded-md border border-neutral-700 px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-neutral-100 transition-all hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50"
           >
-            Spin again
+            {spinningAgain ? "Spinning..." : "Spin again"}
           </button>
           <button
             onClick={() => setStage("rating")}
