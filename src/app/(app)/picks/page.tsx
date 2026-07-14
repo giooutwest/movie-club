@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { posterUrl } from "@/lib/tmdb/client";
 import { AddPickForm } from "./add-pick-form";
@@ -48,7 +49,11 @@ export default async function PicksPage() {
             </h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
               {groups.get(name)!.map((pick) => (
-                <div key={pick.id} className="flex flex-col gap-2">
+                <Link
+                  key={pick.id}
+                  href={`/movie/${pick.id}`}
+                  className="flex flex-col gap-2 transition hover:opacity-80"
+                >
                   {posterUrl(pick.poster_path, "w342") ? (
                     <Image
                       src={posterUrl(pick.poster_path, "w342")!}
@@ -68,7 +73,7 @@ export default async function PicksPage() {
                       </span>
                     )}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

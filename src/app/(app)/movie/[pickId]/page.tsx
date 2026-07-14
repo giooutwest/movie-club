@@ -2,10 +2,12 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMovieDetails, posterUrl } from "@/lib/tmdb/client";
+import { RateForm } from "./rate-form";
 
 interface RatingRow {
   score: number;
-  review_text: string;
+  review_text: string | null;
+  profile_id: string;
   profiles: { display_name: string } | null;
 }
 
@@ -25,11 +27,17 @@ export default async function MovieDetailPage({
 
   if (!pick) notFound();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data: ratings } = await supabase
     .from("ratings")
-    .select("score, review_text, profiles(display_name)")
+    .select("score, review_text, profile_id, profiles(display_name)")
     .eq("pick_id", pickId)
     .returns<RatingRow[]>();
+
+  const hasRated = !!ratings?.some((r) => r.profile_id === user?.id);
 
   const details = await getMovieDetails(pick.tmdb_id).catch(() => null);
 
@@ -84,6 +92,15 @@ export default async function MovieDetailPage({
         </div>
       </div>
 
+      {!hasRated && user && (
+        <>
+          <h2 className="mb-3 mt-10 text-lg font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
+            Rate it
+          </h2>
+          <RateForm pickId={pick.id} />
+        </>
+      )}
+
       <h2 className="mb-3 mt-10 text-lg font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
         Everyone&apos;s scores
       </h2>
@@ -101,7 +118,9 @@ export default async function MovieDetailPage({
                 {r.score.toFixed(1)}
               </span>
             </div>
-            <p className="text-sm text-neutral-400">{r.review_text}</p>
+            {r.review_text && (
+              <p className="text-sm text-neutral-400">{r.review_text}</p>
+            )}
           </div>
         ))}
         {(ratings ?? []).length === 0 && (
