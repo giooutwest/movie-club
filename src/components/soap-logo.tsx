@@ -1,19 +1,21 @@
 import Image from "next/image";
 
 const SIZES = {
-  sm: { w: 108, h: 44, text: "text-[11px]" },
-  lg: { w: 220, h: 90, text: "text-2xl" },
+  sm: { w: 108, h: 44, radius: 10, text: "text-[11px]" },
+  lg: { w: 220, h: 90, radius: 18, text: "text-2xl" },
 } as const;
 
 export function SoapLogo({ size = "sm" }: { size?: "sm" | "lg" }) {
   const s = SIZES[size];
   return (
     <div
-      className="relative flex select-none items-center justify-center overflow-hidden rounded-[999px] shrink-0"
+      className="relative flex select-none items-center justify-center overflow-hidden shrink-0"
       style={{
         width: s.w,
         height: s.h,
-        boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
+        borderRadius: s.radius,
+        boxShadow:
+          "0 2px 6px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.3), inset 2px 0 0 rgba(255,255,255,0.12), inset -2px 0 0 rgba(0,0,0,0.2)",
       }}
     >
       <Image
