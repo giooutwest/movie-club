@@ -1,7 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/auth/callback"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth/callback",
+  "/icon",
+  "/apple-icon",
+  "/opengraph-image",
+  "/manifest.webmanifest",
+];
 const ONBOARDING_PATHS = ["/welcome", "/add-to-home-screen"];
 
 export async function updateSession(request: NextRequest) {

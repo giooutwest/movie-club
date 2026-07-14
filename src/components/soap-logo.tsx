@@ -27,14 +27,20 @@ export function SoapLogo({ size = "sm" }: { size?: "sm" | "lg" }) {
       <div className="absolute inset-0 bg-black/10" />
       <div className="relative flex flex-col items-center leading-none">
         <span
-          className={`font-[var(--font-display)] uppercase tracking-[0.14em] text-black/85 ${s.text}`}
-          style={{ textShadow: "0 1px 0 rgba(255,255,255,0.35)" }}
+          className={`font-[var(--font-display)] uppercase tracking-[0.14em] text-[#e8629c] ${s.text}`}
+          style={{
+            textShadow:
+              "0 1px 0 rgba(255,255,255,0.8), 0 -1px 0 rgba(93,20,54,0.6), 0 2px 3px rgba(93,20,54,0.45)",
+          }}
         >
           Movie
         </span>
         <span
-          className={`font-[var(--font-display)] uppercase tracking-[0.14em] text-black/85 ${s.text}`}
-          style={{ textShadow: "0 1px 0 rgba(255,255,255,0.35)" }}
+          className={`font-[var(--font-display)] uppercase tracking-[0.14em] text-[#e8629c] ${s.text}`}
+          style={{
+            textShadow:
+              "0 1px 0 rgba(255,255,255,0.8), 0 -1px 0 rgba(93,20,54,0.6), 0 2px 3px rgba(93,20,54,0.45)",
+          }}
         >
           Club
         </span>
