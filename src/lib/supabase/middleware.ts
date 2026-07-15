@@ -3,13 +3,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = [
   "/login",
-  "/auth/callback",
   "/icon",
   "/apple-icon",
   "/opengraph-image",
   "/manifest.webmanifest",
 ];
-const ONBOARDING_PATHS = ["/welcome", "/add-to-home-screen"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -53,24 +51,6 @@ export async function updateSession(request: NextRequest) {
     const homeUrl = request.nextUrl.clone();
     homeUrl.pathname = "/";
     return NextResponse.redirect(homeUrl);
-  }
-
-  const isOnboardingPath = ONBOARDING_PATHS.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  );
-
-  if (user && !isPublic && !isOnboardingPath) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("onboarded")
-      .eq("id", user.id)
-      .single();
-
-    if (profile && !profile.onboarded) {
-      const welcomeUrl = request.nextUrl.clone();
-      welcomeUrl.pathname = "/welcome";
-      return NextResponse.redirect(welcomeUrl);
-    }
   }
 
   return response;

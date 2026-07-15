@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { InviteForm } from "./invite-form";
 
 interface MemberRow {
   profile_id: string;
@@ -39,17 +38,10 @@ export default async function SettingsPage() {
             </li>
           ))}
         </ul>
-      </div>
-
-      <div className="animate-fade-up stagger-1">
-        <h2 className="mb-3 text-lg font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
-          Invite a friend
-        </h2>
-        <p className="mb-3 text-sm text-neutral-500">
-          They&apos;ll get an email invite and can sign in with a magic link
-          once they accept.
+        <p className="mt-4 text-sm text-neutral-500">
+          Friends join themselves — just send them the site link and have
+          them enter their email and name.
         </p>
-        <InviteForm />
       </div>
     </div>
   );

@@ -10,16 +10,11 @@ function isRunningStandalone() {
   );
 }
 
-// Magic-link emails always open in a regular browser tab, never inside the
-// installed home-screen app, and iOS gives a home-screen web app separate
-// storage from Safari -- gating these would make it impossible to ever log
-// in. Only the main app experience is gated behind "add to home screen".
-const EXEMPT_PATHS = [
-  "/add-to-home-screen",
-  "/login",
-  "/auth/callback",
-  "/welcome",
-];
+// Login is now a same-origin form submit (no more email-link round-trip
+// through a separate browser context), so it can be gated behind "add to
+// home screen" like the rest of the app -- only the tutorial page itself
+// is exempt, to avoid redirect-looping it.
+const EXEMPT_PATHS = ["/add-to-home-screen"];
 
 export function SplashScreen() {
   const pathname = usePathname();
