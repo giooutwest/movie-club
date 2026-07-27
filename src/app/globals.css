@@ -31,6 +31,17 @@ body {
   color: #000;
 }
 
+/* iOS Safari auto-zooms the page when focusing any input/textarea/select
+   with a computed font-size under 16px, and doesn't zoom back out on blur --
+   forcing 16px on mobile viewports prevents that entirely. */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 * {
   scrollbar-color: var(--pink-dim) transparent;
 }

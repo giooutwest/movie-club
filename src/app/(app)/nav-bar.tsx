@@ -26,7 +26,10 @@ export function NavBar({ displayName }: { displayName: string | null }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-neutral-900 bg-black/90 backdrop-blur-sm">
+    <header
+      className="sticky top-0 z-40 border-b border-neutral-900 bg-black/90 backdrop-blur-sm"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-6">
           <Link href="/" onClick={() => setOpen(false)} className="transition-transform active:scale-95">

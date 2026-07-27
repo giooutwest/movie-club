@@ -23,7 +23,10 @@ export function ReelFab() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div
+      className="fixed right-6 z-50 flex flex-col items-end gap-3"
+      style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+    >
       {open && (
         <div className="flex flex-col items-end gap-2">
           <button
@@ -38,7 +41,7 @@ export function ReelFab() {
           <button
             onClick={() => {
               setOpen(false);
-              router.push("/picks");
+              router.push("/log");
             }}
             className="animate-fade-up stagger-1 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition-all hover:bg-neutral-800 active:scale-95"
           >
