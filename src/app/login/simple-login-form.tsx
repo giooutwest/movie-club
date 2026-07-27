@@ -15,14 +15,19 @@ export function SimpleLoginForm() {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
-    const result = await simpleLogin(email, name);
-    if (result.error) {
-      setError(result.error);
+    try {
+      const result = await simpleLogin(email, name);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      router.push("/");
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Check your connection and try again.");
+    } finally {
       setSubmitting(false);
-      return;
     }
-    router.push("/");
-    router.refresh();
   }
 
   return (
