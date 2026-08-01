@@ -19,6 +19,47 @@ export default async function RankingsPage() {
     .eq("status", "watched")
     .returns<WatchedPick[]>();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let logNowBanner: { title: string } | null = null;
+  if (user) {
+    const { data: session } = await supabase
+      .from("sessions")
+      .select("id")
+      .neq("status", "closed")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (session) {
+      const { data: result } = await supabase
+        .from("session_result")
+        .select("winning_pick_id")
+        .eq("session_id", session.id)
+        .maybeSingle();
+
+      if (result) {
+        const { data: myRating } = await supabase
+          .from("ratings")
+          .select("id")
+          .eq("session_id", session.id)
+          .eq("profile_id", user.id)
+          .maybeSingle();
+
+        if (!myRating) {
+          const { data: pick } = await supabase
+            .from("picks")
+            .select("title")
+            .eq("id", result.winning_pick_id)
+            .single();
+          if (pick) logNowBanner = { title: pick.title };
+        }
+      }
+    }
+  }
+
   const ranked = (data ?? [])
     .map((pick) => {
       const scores = pick.ratings.map((r) => r.score);
@@ -34,9 +75,27 @@ export default async function RankingsPage() {
     .filter((pick) => pick.count > 0)
     .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
 
+  const banner = logNowBanner && (
+    <Link
+      href="/spin-the-wheel"
+      className="animate-fade-up mb-6 flex items-center justify-between rounded-md border border-[var(--pink)] bg-neutral-950 px-4 py-3 text-sm transition-colors hover:bg-neutral-900"
+    >
+      <span className="text-neutral-200">
+        <span className="font-medium text-neutral-100">
+          {logNowBanner.title}
+        </span>{" "}
+        was picked
+      </span>
+      <span className="font-bold uppercase tracking-wide text-[var(--pink)]">
+        Log now
+      </span>
+    </Link>
+  );
+
   if (ranked.length === 0) {
     return (
       <div className="animate-fade-up text-neutral-400">
+        {banner}
         <h1 className="mb-2 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
           Rankings
         </h1>
@@ -57,6 +116,7 @@ export default async function RankingsPage() {
 
   return (
     <div className="animate-fade-up">
+      {banner}
       <h1 className="mb-6 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
         Rankings
       </h1>

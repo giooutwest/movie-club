@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { posterUrl, type TmdbSearchResult } from "@/lib/tmdb/client";
+import { findOrCreatePick } from "@/lib/picks/find-or-create";
 
 function wordCount(text: string) {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -52,45 +53,22 @@ export function LogMovieFlow() {
     setError(null);
     const supabase = createClient();
 
-    const { data: existingPick } = await supabase
-      .from("picks")
-      .select("id")
-      .eq("tmdb_id", selected.id)
-      .maybeSingle();
-
-    let pickId = existingPick?.id as string | undefined;
-
-    if (!pickId) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setError("You need to be signed in.");
-        setSubmitting(false);
-        return;
-      }
-
-      const { data: newPick, error: insertError } = await supabase
-        .from("picks")
-        .insert({
-          tmdb_id: selected.id,
-          title: selected.title,
-          poster_path: selected.poster_path,
-          release_year: selected.release_date
-            ? Number(selected.release_date.slice(0, 4))
-            : null,
-          added_by: user.id,
-        })
-        .select("id")
-        .single();
-
-      if (insertError || !newPick) {
-        setError(insertError?.message ?? "Could not log this movie.");
-        setSubmitting(false);
-        return;
-      }
-      pickId = newPick.id;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setError("You need to be signed in.");
+      setSubmitting(false);
+      return;
     }
+
+    const result = await findOrCreatePick(supabase, selected, user.id);
+    if ("error" in result) {
+      setError(result.error);
+      setSubmitting(false);
+      return;
+    }
+    const pickId = result.id;
 
     const { error: rpcError } = await supabase.rpc("rate_pick", {
       p_pick_id: pickId,
@@ -104,7 +82,7 @@ export function LogMovieFlow() {
       return;
     }
 
-    setLoggedPickId(pickId!);
+    setLoggedPickId(pickId);
   }
 
   if (loggedPickId) {

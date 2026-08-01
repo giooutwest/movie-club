@@ -397,7 +397,7 @@ export function SpinWheelClient({
             onClick={() => setStage("rating")}
             className="rounded-md bg-[var(--pink)] px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98]"
           >
-            Log
+            Pick!
           </button>
         </div>
         <button

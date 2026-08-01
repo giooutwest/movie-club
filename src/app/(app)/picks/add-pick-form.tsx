@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { posterUrl, type TmdbSearchResult } from "@/lib/tmdb/client";
+import { findOrCreatePick } from "@/lib/picks/find-or-create";
 
 export function AddPickForm() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export function AddPickForm() {
   const [results, setResults] = useState<TmdbSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [addingId, setAddingId] = useState<number | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -25,21 +27,33 @@ export function AddPickForm() {
 
   async function addPick(movie: TmdbSearchResult) {
     setAddingId(movie.id);
+    setNotice(null);
     const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setAddingId(null);
+      return;
+    }
 
-    await supabase.from("picks").insert({
-      tmdb_id: movie.id,
-      title: movie.title,
-      poster_path: movie.poster_path,
-      release_year: movie.release_date
-        ? Number(movie.release_date.slice(0, 4))
-        : null,
-      added_by: user.id,
-    });
+    const result = await findOrCreatePick(supabase, movie, user.id);
+
+    if ("error" in result) {
+      setNotice(result.error);
+      setAddingId(null);
+      return;
+    }
+
+    if (result.alreadyExisted) {
+      setNotice(
+        result.status === "watched"
+          ? `${movie.title} has already been watched.`
+          : `${movie.title} is already picked.`
+      );
+      setAddingId(null);
+      return;
+    }
 
     setResults((prev) => prev.filter((m) => m.id !== movie.id));
     setAddingId(null);
@@ -63,6 +77,10 @@ export function AddPickForm() {
           {searching ? "Searching..." : "Search"}
         </button>
       </form>
+
+      {notice && (
+        <p className="animate-fade-in mt-2 text-sm text-neutral-400">{notice}</p>
+      )}
 
       {results.length > 0 && (
         <div className="animate-fade-up mt-4 flex flex-col gap-2 rounded-md border border-neutral-900 p-2">

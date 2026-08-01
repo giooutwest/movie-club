@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { RenameForm } from "./rename-form";
 
 interface MemberRow {
   profile_id: string;
@@ -8,13 +9,32 @@ interface MemberRow {
 
 export default async function SettingsPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { data: members } = await supabase
     .from("club_members")
     .select("profile_id, active, profiles(display_name)")
     .returns<MemberRow[]>();
 
+  const { data: myProfile } = user
+    ? await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .single()
+    : { data: null };
+
   return (
     <div className="animate-fade-up flex flex-col gap-8">
+      {user && myProfile && (
+        <div>
+          <h1 className="mb-4 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
+            Your profile
+          </h1>
+          <RenameForm userId={user.id} currentName={myProfile.display_name} />
+        </div>
+      )}
       <div>
         <h1 className="mb-4 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
           Club members
