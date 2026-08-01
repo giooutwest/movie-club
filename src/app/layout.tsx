@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Anton } from "next/font/google";
 import { SplashScreen } from "@/components/splash-screen";
+import { UpdateScreen } from "@/components/update-screen";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -47,6 +48,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-black text-neutral-100">
         <SplashScreen />
+        <UpdateScreen />
         {children}
       </body>
     </html>

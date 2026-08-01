@@ -1,0 +1,11 @@
+[
+  {
+    "version": "1.1",
+    "date": "2026-08-01",
+    "notes": [
+      "Movies no longer get duplicated between Picks and Rankings",
+      "Members can rename themselves in Settings",
+      "Wheel result screen now says \"Pick!\", with a \"Log now\" reminder on the homescreen"
+    ]
+  }
+]
