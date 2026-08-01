@@ -7,5 +7,12 @@
       "Members can rename themselves in Settings",
       "Wheel result screen now says \"Pick!\", with a \"Log now\" reminder on the homescreen"
     ]
+  },
+  {
+    "version": "1.2",
+    "date": "2026-08-01",
+    "notes": [
+      "Add first-open update screen with auto-bumped version tracking"
+    ]
   }
 ]
