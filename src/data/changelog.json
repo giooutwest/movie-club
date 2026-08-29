@@ -21,5 +21,12 @@
     "notes": [
       "Show own picks first, switch Picks to a list view, allow removing own picks"
     ]
+  },
+  {
+    "version": "1.4",
+    "date": "2026-08-29",
+    "notes": [
+      "Allow deleting imported picks attributed by name, not just linked ones"
+    ]
   }
 ]
