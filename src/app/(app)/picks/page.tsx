@@ -22,6 +22,16 @@ export default async function PicksPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  let ownDisplayName: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.id)
+      .single();
+    ownDisplayName = profile?.display_name ?? null;
+  }
+
   const { data } = await supabase
     .from("picks")
     .select(
@@ -38,9 +48,12 @@ export default async function PicksPage() {
     groups.get(name)!.push(pick);
   }
 
-  const ownName = data?.find((p) => p.added_by === user?.id)
-    ? personName(data.find((p) => p.added_by === user?.id)!)
-    : null;
+  function isOwnPick(pick: PendingPick) {
+    return pick.added_by === user?.id || (pick.added_by === null && pick.added_by_name === ownDisplayName);
+  }
+
+  const ownPick = data?.find(isOwnPick);
+  const ownName = ownPick ? personName(ownPick) : null;
 
   const otherNames = [...groups.keys()]
     .filter((name) => name !== ownName)
@@ -68,7 +81,7 @@ export default async function PicksPage() {
                   title={pick.title}
                   poster_path={pick.poster_path}
                   release_year={pick.release_year}
-                  isOwner={pick.added_by === user?.id}
+                  isOwner={isOwnPick(pick)}
                 />
               ))}
             </div>
