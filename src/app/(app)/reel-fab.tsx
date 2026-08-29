@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PINK, PINK_DIM, PINK_LIGHT } from "@/lib/theme-colors";
 
 function ReelIcon() {
   return (
@@ -34,7 +35,7 @@ export function ReelFab() {
               setOpen(false);
               router.push("/spin-the-wheel");
             }}
-            className="animate-fade-up stagger-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition-all hover:bg-neutral-800 active:scale-95"
+            className="animate-fade-up stagger-2 rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition-all hover:bg-neutral-800 active:scale-95"
           >
             🎡 Spin the wheel
           </button>
@@ -43,7 +44,7 @@ export function ReelFab() {
               setOpen(false);
               router.push("/log");
             }}
-            className="animate-fade-up stagger-1 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition-all hover:bg-neutral-800 active:scale-95"
+            className="animate-fade-up stagger-1 rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-neutral-100 shadow-lg ring-1 ring-neutral-800 transition-all hover:bg-neutral-800 active:scale-95"
           >
             🎬 Log a movie
           </button>
@@ -56,8 +57,7 @@ export function ReelFab() {
           open ? "rotate-45" : "hover:scale-105"
         }`}
         style={{
-          background:
-            "linear-gradient(155deg, #ff6fb8 0%, #ff2f92 42%, #d4127a 100%)",
+          background: `linear-gradient(155deg, ${PINK_LIGHT} 0%, ${PINK} 42%, ${PINK_DIM} 100%)`,
         }}
       >
         <ReelIcon />

@@ -128,11 +128,11 @@ export default async function RankingsPage() {
           >
             <Link
               href={`/movie/${pick.id}`}
-              className="group flex items-center gap-4 rounded-md border border-neutral-900 p-3 transition-all duration-200 hover:border-neutral-700 hover:bg-neutral-950"
+              className="group flex items-center gap-4 rounded-md border border-neutral-900 p-3 transition-all duration-300 hover:border-neutral-700 hover:bg-neutral-950"
             >
               <span
                 className={`w-6 text-right text-sm font-medium ${
-                  i === 0 ? "text-[var(--pink)]" : "text-neutral-500"
+                  i === 0 ? "text-[var(--pink)]" : "text-neutral-400"
                 }`}
               >
                 {i + 1}

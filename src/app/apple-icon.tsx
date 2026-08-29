@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { PINK, PINK_DIM, PINK_LIGHT } from "@/lib/theme-colors";
 
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
@@ -31,8 +32,7 @@ export default function AppleIcon() {
             justifyContent: "center",
             overflow: "hidden",
             borderRadius: "999px",
-            background:
-              "radial-gradient(circle at 32% 26%, #ffb0d9 0%, #ff5fa8 24%, #ff2f92 52%, #b90e66 100%)",
+            background: `radial-gradient(circle at 32% 26%, ${PINK_LIGHT} 0%, #ff5fa8 24%, ${PINK} 52%, ${PINK_DIM} 100%)`,
             boxShadow:
               "inset 0 8px 12px rgba(255,255,255,0.45), inset 0 -12px 20px rgba(0,0,0,0.4), inset 6px 0 10px rgba(255,255,255,0.12), inset -6px 0 10px rgba(0,0,0,0.2)",
           }}

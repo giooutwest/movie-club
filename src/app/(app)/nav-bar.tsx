@@ -43,7 +43,7 @@ export function NavBar({ displayName }: { displayName: string | null }) {
                 className={`relative py-1 text-sm font-medium uppercase tracking-wide transition-colors ${
                   pathname === link.href
                     ? "text-[var(--pink)]"
-                    : "text-neutral-500 hover:text-neutral-300"
+                    : "text-neutral-400 hover:text-neutral-300"
                 }`}
               >
                 {link.label}
@@ -62,7 +62,7 @@ export function NavBar({ displayName }: { displayName: string | null }) {
           )}
           <button
             onClick={signOut}
-            className="text-sm text-neutral-500 transition-colors hover:text-neutral-300"
+            className="text-sm text-neutral-400 transition-colors hover:text-neutral-300"
           >
             Sign out
           </button>
@@ -71,7 +71,7 @@ export function NavBar({ displayName }: { displayName: string | null }) {
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
           aria-expanded={open}
-          className="flex h-9 w-9 items-center justify-center text-neutral-300 md:hidden"
+          className="flex h-10 w-10 items-center justify-center text-neutral-300 md:hidden"
         >
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
             <path
@@ -86,7 +86,7 @@ export function NavBar({ displayName }: { displayName: string | null }) {
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
-              className={`transition-opacity duration-200 ${open ? "opacity-0" : "opacity-100"}`}
+              className={`transition-opacity duration-300 ${open ? "opacity-0" : "opacity-100"}`}
             />
             <path
               d="M3 16H19"
@@ -114,7 +114,7 @@ export function NavBar({ displayName }: { displayName: string | null }) {
                 className={`py-2 text-sm font-medium uppercase tracking-wide transition-colors ${
                   pathname === link.href
                     ? "text-[var(--pink)]"
-                    : "text-neutral-500 hover:text-neutral-300"
+                    : "text-neutral-400 hover:text-neutral-300"
                 }`}
               >
                 {link.label}

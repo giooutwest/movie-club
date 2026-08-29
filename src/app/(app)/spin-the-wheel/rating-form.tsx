@@ -58,7 +58,7 @@ export function RatingForm({
           step={0.5}
           value={score}
           onChange={(e) => setScore(Number(e.target.value))}
-          className="accent-[var(--pink)]"
+          className="accent-[var(--pink)] transition-transform active:scale-y-125"
         />
       </label>
       <label className="flex flex-col gap-2">
@@ -77,7 +77,7 @@ export function RatingForm({
       <button
         type="submit"
         disabled={submitting}
-        className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition hover:brightness-110 disabled:opacity-50"
+        className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
       >
         {submitting ? "Submitting..." : "Submit rating"}
       </button>

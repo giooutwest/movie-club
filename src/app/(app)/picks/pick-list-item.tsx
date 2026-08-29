@@ -59,7 +59,7 @@ export function PickListItem({ id, title, poster_path, release_year, isOwner }: 
         <button
           onClick={handleRemove}
           disabled={removing}
-          className="rounded-md border border-neutral-700 px-2 py-1 text-xs font-medium text-neutral-400 transition-all hover:border-[var(--pink)] hover:text-[var(--pink)] active:scale-95 disabled:opacity-50"
+          className="rounded-md border border-neutral-700 px-2.5 py-1.5 text-xs font-medium text-neutral-300 transition-all hover:bg-neutral-800 hover:text-neutral-100 active:scale-95 disabled:opacity-50"
         >
           {removing ? "Removing..." : "Remove"}
         </button>

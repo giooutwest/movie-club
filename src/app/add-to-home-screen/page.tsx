@@ -28,7 +28,7 @@ export default function AddToHomeScreenPage() {
 
       <button
         onClick={() => router.push("/")}
-        className="rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition hover:brightness-110"
+        className="rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98]"
       >
         Continue
       </button>

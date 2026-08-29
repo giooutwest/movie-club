@@ -50,7 +50,7 @@ export default async function SettingsPage() {
               </span>
               <span
                 className={`text-xs ${
-                  m.active ? "text-[var(--pink)]" : "text-neutral-500"
+                  m.active ? "text-[var(--pink)]" : "text-neutral-400"
                 }`}
               >
                 {m.active ? "active" : "inactive"}

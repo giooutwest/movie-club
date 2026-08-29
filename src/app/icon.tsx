@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { PINK, PINK_DIM, PINK_LIGHT } from "@/lib/theme-colors";
 
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
@@ -14,8 +15,7 @@ export default function Icon() {
           alignItems: "center",
           justifyContent: "center",
           borderRadius: "999px",
-          background:
-            "linear-gradient(155deg, #ff7ec0 0%, #ff2f92 45%, #c40f6f 100%)",
+          background: `linear-gradient(155deg, ${PINK_LIGHT} 0%, ${PINK} 45%, ${PINK_DIM} 100%)`,
         }}
       >
         <span

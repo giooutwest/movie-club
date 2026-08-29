@@ -300,7 +300,7 @@ export function SpinWheelClient({
               </span>
               <span
                 className={`text-xs font-medium ${
-                  readyMap[m.profileId] ? "text-green-400" : "text-neutral-500"
+                  readyMap[m.profileId] ? "text-green-400" : "text-neutral-400"
                 }`}
               >
                 {readyMap[m.profileId] ? "Ready" : "Waiting"}
@@ -362,7 +362,7 @@ export function SpinWheelClient({
   if (stage === "result" && winner) {
     return (
       <div className="animate-scale-in flex flex-col items-center gap-6 py-8 text-center">
-        <p className="text-sm uppercase tracking-wide text-neutral-500">
+        <p className="text-xs uppercase tracking-wide text-neutral-500">
           Tonight&apos;s pick
         </p>
         {posterUrl(winningPick?.poster_path ?? null, "w342") ? (

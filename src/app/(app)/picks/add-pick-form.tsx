@@ -109,7 +109,7 @@ export function AddPickForm() {
               <button
                 onClick={() => addPick(movie)}
                 disabled={addingId === movie.id}
-                className="rounded-md border border-[var(--pink)] px-3 py-1 text-xs font-medium text-[var(--pink)] transition-all hover:bg-[var(--pink)] hover:text-black active:scale-95 disabled:opacity-50"
+                className="rounded-md border border-[var(--pink)] px-3.5 py-1.5 text-xs font-medium text-[var(--pink)] transition-all hover:bg-[var(--pink)] hover:text-black active:scale-95 disabled:opacity-50"
               >
                 {addingId === movie.id ? "Adding..." : "Add pick"}
               </button>
