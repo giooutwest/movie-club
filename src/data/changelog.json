@@ -28,5 +28,12 @@
     "notes": [
       "Allow deleting imported picks attributed by name, not just linked ones"
     ]
+  },
+  {
+    "version": "1.5",
+    "date": "2026-08-29",
+    "notes": [
+      "Tighten UI polish: consistent brand pink, contrast, touch targets, motion"
+    ]
   }
 ]
