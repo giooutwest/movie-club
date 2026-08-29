@@ -14,5 +14,12 @@
     "notes": [
       "Add first-open update screen with auto-bumped version tracking"
     ]
+  },
+  {
+    "version": "1.3",
+    "date": "2026-08-29",
+    "notes": [
+      "Show own picks first, switch Picks to a list view, allow removing own picks"
+    ]
   }
 ]
