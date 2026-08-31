@@ -35,5 +35,13 @@
     "notes": [
       "Tighten UI polish: consistent brand pink, contrast, touch targets, motion"
     ]
+  },
+  {
+    "version": "1.6",
+    "date": "2026-08-31",
+    "notes": [
+      "Spin without readying",
+      "Added runtime"
+    ]
   }
 ]
