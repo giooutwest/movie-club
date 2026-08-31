@@ -3,23 +3,20 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { posterUrl } from "@/lib/tmdb/client";
 
-interface Pick {
+interface Rating {
+  score: number;
+  review_text: string | null;
+  watched_with_group: boolean;
+  created_at: string;
+  profiles: { display_name: string } | null;
+}
+
+interface WatchedPick {
   id: string;
   title: string;
   poster_path: string | null;
   release_year: number | null;
-}
-
-interface SessionRow {
-  id: string;
-  created_at: string;
-  session_result: { winning_pick_id: string; picks: Pick | null } | null;
-  ratings: {
-    score: number;
-    pick_id: string;
-    watched_with_group: boolean;
-    profiles: { display_name: string } | null;
-  }[];
+  ratings: Rating[];
 }
 
 function formatDate(iso: string) {
@@ -34,42 +31,52 @@ export default async function HistoryPage() {
   const supabase = await createClient();
 
   const { data } = await supabase
-    .from("sessions")
+    .from("picks")
     .select(
       `
-      id,
-      created_at,
-      session_result(winning_pick_id, picks(id, title, poster_path, release_year)),
-      ratings(score, pick_id, watched_with_group, profiles(display_name))
+      id, title, poster_path, release_year,
+      ratings(score, review_text, watched_with_group, created_at, profiles(display_name))
     `
     )
-    .order("created_at", { ascending: false })
-    .returns<SessionRow[]>();
+    .eq("status", "watched")
+    .returns<WatchedPick[]>();
 
-  // Only nights that actually happened -- a session someone abandoned or
-  // re-spun before anyone rated the current pick isn't a real movie night.
-  // (Ratings are scoped to the winning pick, not just the session, so a
-  // stale rating from before a "spin again" doesn't count here.)
-  const nights = (data ?? [])
-    .filter((s) => s.session_result?.picks)
-    .map((s) => ({
-      ...s,
-      ratings: s.ratings.filter((r) => r.pick_id === s.session_result!.winning_pick_id),
+  // A pick counts as "watched" the moment the wheel lands on it -- only
+  // show it here once at least one person has actually rated it, same
+  // rule Rankings uses, so nothing appears before anyone's weighed in.
+  const watched = (data ?? [])
+    .filter((p) => p.ratings.length > 0)
+    .map((p) => ({
+      ...p,
+      // Earliest rating stands in for "when we watched it" -- there's no
+      // separate watched-date field, and that's usually right after.
+      watchedAt: p.ratings.reduce(
+        (min, r) => (r.created_at < min ? r.created_at : min),
+        p.ratings[0].created_at
+      ),
     }))
-    .filter((s) => s.ratings.length > 0);
+    .sort((a, b) => (a.watchedAt < b.watchedAt ? 1 : -1));
 
-  if (nights.length === 0) {
+  if (watched.length === 0) {
     return (
       <div className="animate-fade-up text-neutral-400">
         <h1 className="mb-2 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
           History
         </h1>
         <p>
-          No movie nights logged yet. Run a{" "}
+          No films watched yet. Add some{" "}
+          <Link href="/picks" className="text-[var(--pink)] transition-colors hover:brightness-125">
+            picks
+          </Link>{" "}
+          and{" "}
           <Link href="/spin-the-wheel" className="text-[var(--pink)] transition-colors hover:brightness-125">
             spin the wheel
           </Link>{" "}
-          and rate the pick to start one.
+          or{" "}
+          <Link href="/log" className="text-[var(--pink)] transition-colors hover:brightness-125">
+            log one
+          </Link>
+          .
         </p>
       </div>
     );
@@ -80,35 +87,32 @@ export default async function HistoryPage() {
       <h1 className="mb-6 text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
         History
       </h1>
-      <ol className="flex flex-col gap-3">
-        {nights.map((night, i) => {
-          const pick = night.session_result!.picks!;
-          const scores = night.ratings.map((r) => r.score);
-          const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-          const attendees = night.ratings
+      <div className="flex flex-col gap-4">
+        {watched.map((pick, i) => {
+          const avg =
+            pick.ratings.reduce((sum, r) => sum + r.score, 0) / pick.ratings.length;
+          const attendees = pick.ratings
             .filter((r) => r.watched_with_group)
             .map((r) => r.profiles?.display_name)
             .filter((n): n is string => !!n);
+          const reviews = pick.ratings.filter((r) => r.review_text);
 
           return (
-            <li
-              key={night.id}
-              className={`animate-fade-up stagger-${Math.min(i + 1, 4)}`}
+            <div
+              key={pick.id}
+              className={`animate-fade-up stagger-${Math.min(i + 1, 4)} rounded-md border border-neutral-900 p-4 transition-colors hover:border-neutral-700`}
             >
-              <Link
-                href={`/movie/${pick.id}`}
-                className="group flex items-center gap-4 rounded-md border border-neutral-900 p-3 transition-all duration-300 hover:border-neutral-700 hover:bg-neutral-950"
-              >
+              <Link href={`/movie/${pick.id}`} className="group flex items-center gap-4">
                 {posterUrl(pick.poster_path, "w200") ? (
                   <Image
                     src={posterUrl(pick.poster_path, "w200")!}
                     alt={pick.title}
                     width={40}
                     height={60}
-                    className="rounded transition-transform duration-300 group-hover:scale-105"
+                    className="shrink-0 rounded transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="h-[60px] w-[40px] rounded bg-neutral-800" />
+                  <div className="h-[60px] w-[40px] shrink-0 rounded bg-neutral-800" />
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-neutral-100 transition-colors group-hover:text-[var(--pink)]">
@@ -118,18 +122,32 @@ export default async function HistoryPage() {
                     )}
                   </p>
                   <p className="text-xs text-neutral-500">
-                    {formatDate(night.created_at)}
-                    {attendees.length > 0 && <> · {attendees.join(", ")}</>}
+                    {formatDate(pick.watchedAt)}
+                    {attendees.length > 0 && <> · watched together: {attendees.join(", ")}</>}
                   </p>
                 </div>
                 <span className="shrink-0 text-lg font-[var(--font-display)] uppercase tracking-wide text-[var(--pink)]">
                   {avg.toFixed(1)}
                 </span>
               </Link>
-            </li>
+
+              {reviews.length > 0 && (
+                <div className="mt-3 flex flex-col gap-2 border-t border-neutral-900 pt-3">
+                  {reviews.map((r, j) => (
+                    <div key={j} className="text-sm">
+                      <span className="font-medium text-neutral-200">
+                        {r.profiles?.display_name ?? "member"}
+                      </span>
+                      <span className="ml-2 text-neutral-500">{r.score.toFixed(1)}</span>
+                      <p className="text-neutral-400">{r.review_text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           );
         })}
-      </ol>
+      </div>
     </div>
   );
 }
