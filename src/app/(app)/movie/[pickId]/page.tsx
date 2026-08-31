@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getMovieDetails, posterUrl } from "@/lib/tmdb/client";
+import { formatRuntime, getMovieDetails, posterUrl } from "@/lib/tmdb/client";
 import { RateForm } from "./rate-form";
 
 interface RatingRow {
@@ -74,11 +74,13 @@ export default async function MovieDetailPage({
             <h1 className="text-2xl font-[var(--font-display)] uppercase leading-tight tracking-wide text-neutral-100 sm:text-3xl">
               {pick.title}
             </h1>
-            {(details?.genres?.length || pick.release_year) && (
+            {(details?.genres?.length || pick.release_year || details?.runtime) && (
               <p className="mt-1 text-sm uppercase tracking-wide text-neutral-500">
                 {details?.genres?.map((g) => g.name).join(", ")}
                 {details?.genres?.length && pick.release_year ? " · " : ""}
                 {pick.release_year}
+                {formatRuntime(details?.runtime) && (pick.release_year || details?.genres?.length) ? " · " : ""}
+                {formatRuntime(details?.runtime)}
               </p>
             )}
           </div>

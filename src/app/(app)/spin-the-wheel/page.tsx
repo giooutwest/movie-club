@@ -22,7 +22,7 @@ export default async function SpinTheWheelPage() {
 
   const { data: pendingPicksData } = await supabase
     .from("picks")
-    .select("id, title, poster_path, release_year")
+    .select("id, title, poster_path, release_year, tmdb_id")
     .eq("status", "pending");
 
   const pendingPicks = pendingPicksData ?? [];
@@ -50,7 +50,7 @@ export default async function SpinTheWheelPage() {
       if (!pendingPicks.some((p) => p.id === result.winning_pick_id)) {
         const { data: winningPick } = await supabase
           .from("picks")
-          .select("id, title, poster_path, release_year")
+          .select("id, title, poster_path, release_year, tmdb_id")
           .eq("id", result.winning_pick_id)
           .single();
         if (winningPick) pendingPicks.push(winningPick);

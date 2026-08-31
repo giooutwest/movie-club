@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
-import { posterUrl } from "@/lib/tmdb/client";
+import { formatRuntime, posterUrl } from "@/lib/tmdb/client";
 import { Wheel } from "./wheel";
 import { RatingForm } from "./rating-form";
 
@@ -18,6 +18,7 @@ interface PendingPick {
   title: string;
   poster_path: string | null;
   release_year: number | null;
+  tmdb_id: number;
 }
 
 interface SessionRow {
@@ -47,7 +48,6 @@ export function SpinWheelClient({
   const supabase = useMemo(() => createClient(), []);
 
   const [session, setSession] = useState(initialSession);
-  const [readyMap, setReadyMap] = useState<Record<string, boolean>>({});
   const [winner, setWinner] = useState<Winner | null>(initialWinner);
   // A winner is already decided when this page loads (e.g. reopening the
   // app mid-session) -- jump straight to the result instead of defaulting
@@ -57,24 +57,16 @@ export function SpinWheelClient({
     "gathering" | "spinning" | "result" | "rating"
   >(initialWinner ? "result" : "gathering");
   const [ratedProfiles, setRatedProfiles] = useState<Set<string>>(new Set());
+  const [runtime, setRuntime] = useState<string | null>(null);
   const [spinningAgain, setSpinningAgain] = useState(false);
   const [starting, setStarting] = useState(false);
   const [endingSession, setEndingSession] = useState(false);
 
-  // Load existing ready state + subscribe to realtime updates for this session.
+  // Load existing ratings + subscribe to realtime updates for this session.
   useEffect(() => {
     if (!session) return;
 
     let cancelled = false;
-
-    supabase
-      .from("session_members")
-      .select("profile_id, ready")
-      .eq("session_id", session.id)
-      .then(({ data }) => {
-        if (cancelled || !data) return;
-        setReadyMap(Object.fromEntries(data.map((r) => [r.profile_id, r.ready])));
-      });
 
     supabase
       .from("ratings")
@@ -87,19 +79,6 @@ export function SpinWheelClient({
 
     const channel = supabase
       .channel(`spin-the-wheel-${session.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "session_members",
-          filter: `session_id=eq.${session.id}`,
-        },
-        (payload) => {
-          const row = payload.new as { profile_id: string; ready: boolean };
-          setReadyMap((prev) => ({ ...prev, [row.profile_id]: row.ready }));
-        }
-      )
       .on(
         "postgres_changes",
         {
@@ -165,42 +144,27 @@ export function SpinWheelClient({
     };
   }, [session, supabase]);
 
-  async function startGathering() {
-    const { data: newSession, error } = await supabase
-      .from("sessions")
-      .insert({ status: "gathering" })
-      .select()
-      .single();
-    if (error || !newSession) return;
-
-    await supabase.from("session_members").insert(
-      members.map((m) => ({
-        session_id: newSession.id,
-        profile_id: m.profileId,
-        ready: false,
-      }))
-    );
-
-    setSession(newSession);
-    setStage("gathering");
-    setWinner(null);
-    setRatedProfiles(new Set());
-  }
-
-  async function markReady() {
-    if (!session) return;
-    await supabase
-      .from("session_members")
-      .update({ ready: true })
-      .eq("session_id", session.id)
-      .eq("profile_id", currentUserId);
-  }
-
-  async function startSpin() {
-    if (!session) return;
+  async function spin() {
     setStarting(true);
+    let sessionId = session?.id;
+    if (!sessionId) {
+      const { data: newSession, error } = await supabase
+        .from("sessions")
+        .insert({ status: "gathering" })
+        .select()
+        .single();
+      if (error || !newSession) {
+        setStarting(false);
+        return;
+      }
+      setSession(newSession);
+      setWinner(null);
+      setRatedProfiles(new Set());
+      sessionId = newSession.id;
+    }
+
     const { error } = await supabase.rpc("attempt_decide_winner", {
-      p_session_id: session.id,
+      p_session_id: sessionId,
     });
     if (error) {
       setStarting(false);
@@ -212,7 +176,7 @@ export function SpinWheelClient({
     const { data } = await supabase
       .from("session_result")
       .select("winning_pick_id, seed")
-      .eq("session_id", session.id)
+      .eq("session_id", sessionId)
       .maybeSingle();
     if (data) {
       setWinner({ pickId: data.winning_pick_id, seed: data.seed });
@@ -263,6 +227,31 @@ export function SpinWheelClient({
     ? pendingPicks.find((p) => p.id === winner.pickId)
     : null;
 
+  // Fetch the winning pick's runtime for display -- how long it actually
+  // is matters more when you're deciding whether to start it right now.
+  useEffect(() => {
+    let cancelled = false;
+    if (!winningPick) {
+      Promise.resolve().then(() => {
+        if (!cancelled) setRuntime(null);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+    fetch(`/api/tmdb/movie/${winningPick.tmdb_id}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled) setRuntime(formatRuntime(data?.runtime));
+      })
+      .catch(() => {
+        if (!cancelled) setRuntime(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [winningPick]);
+
   if (!session) {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
@@ -270,67 +259,32 @@ export function SpinWheelClient({
           No spin in progress
         </h1>
         <p className="text-sm text-neutral-400">
-          Start one and everyone can ready up together.
+          Anyone can spin whenever they&apos;re ready.
         </p>
         <button
-          onClick={startGathering}
-          className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98]"
+          onClick={spin}
+          disabled={starting}
+          className="rounded-md bg-[var(--pink)] px-4 py-2 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
         >
-          Start
+          {starting ? "Spinning..." : "Spin the wheel"}
         </button>
       </div>
     );
   }
 
   if (stage === "gathering") {
-    const allReady = members.every((m) => readyMap[m.profileId]);
     return (
       <div className="animate-fade-up flex flex-col items-center gap-6 py-12">
         <h1 className="text-xl font-[var(--font-display)] uppercase tracking-wide text-neutral-100">
-          Waiting for everyone to be ready
+          Ready to spin
         </h1>
-        <ul className="flex flex-col gap-2">
-          {members.map((m) => (
-            <li
-              key={m.profileId}
-              className="flex w-64 items-center justify-between rounded-md border border-neutral-900 px-3 py-2 transition-colors hover:border-neutral-700"
-            >
-              <span className="text-sm text-neutral-200">
-                {m.displayName}
-              </span>
-              <span
-                className={`text-xs font-medium ${
-                  readyMap[m.profileId] ? "text-green-400" : "text-neutral-400"
-                }`}
-              >
-                {readyMap[m.profileId] ? "Ready" : "Waiting"}
-              </span>
-            </li>
-          ))}
-        </ul>
-        {!readyMap[currentUserId] ? (
-          <button
-            onClick={markReady}
-            className="rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98]"
-          >
-            I&apos;m ready
-          </button>
-        ) : allReady ? (
-          <button
-            onClick={startSpin}
-            disabled={starting}
-            className="animate-scale-in rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
-          >
-            {starting ? "Starting..." : "Start"}
-          </button>
-        ) : (
-          <button
-            disabled
-            className="cursor-default rounded-md bg-neutral-900 px-6 py-3 text-sm font-bold uppercase tracking-wide text-neutral-500"
-          >
-            Waiting...
-          </button>
-        )}
+        <button
+          onClick={spin}
+          disabled={starting}
+          className="animate-scale-in rounded-md bg-[var(--pink)] px-6 py-3 text-sm font-bold uppercase tracking-wide text-black transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+        >
+          {starting ? "Spinning..." : "Spin the wheel"}
+        </button>
         <button
           onClick={endSession}
           disabled={endingSession}
@@ -385,6 +339,9 @@ export function SpinWheelClient({
             </span>
           )}
         </h1>
+        {runtime && (
+          <p className="-mt-4 text-sm text-neutral-500">{runtime}</p>
+        )}
         <div className="flex gap-3">
           <button
             onClick={spinAgain}

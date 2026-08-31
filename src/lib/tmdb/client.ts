@@ -17,6 +17,15 @@ export function posterUrl(path: string | null, size: "w200" | "w342" | "w500" = 
   return path ? `${IMAGE_BASE}/${size}${path}` : null;
 }
 
+export function formatRuntime(minutes: number | null | undefined) {
+  if (!minutes) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
 export interface TmdbSearchResult {
   id: number;
   title: string;
