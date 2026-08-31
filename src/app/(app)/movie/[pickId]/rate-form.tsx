@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { WatchedWithGroupCheckbox } from "@/components/watched-with-group-checkbox";
 
 function wordCount(text: string) {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -12,6 +13,7 @@ export function RateForm({ pickId }: { pickId: string }) {
   const router = useRouter();
   const [score, setScore] = useState(7);
   const [review, setReview] = useState("");
+  const [watchedWithGroup, setWatchedWithGroup] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -29,6 +31,7 @@ export function RateForm({ pickId }: { pickId: string }) {
       p_pick_id: pickId,
       p_score: score,
       p_review_text: review.trim() || null,
+      p_watched_with_group: watchedWithGroup,
     });
     setSubmitting(false);
     if (rpcError) {
@@ -65,6 +68,7 @@ export function RateForm({ pickId }: { pickId: string }) {
           placeholder="What did you think? (optional)"
         />
       </label>
+      <WatchedWithGroupCheckbox checked={watchedWithGroup} onChange={setWatchedWithGroup} />
       {error && <p className="animate-fade-in text-sm text-red-400">{error}</p>}
       <button
         type="submit"

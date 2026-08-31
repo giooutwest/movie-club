@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { posterUrl, type TmdbSearchResult } from "@/lib/tmdb/client";
 import { findOrCreatePick } from "@/lib/picks/find-or-create";
+import { WatchedWithGroupCheckbox } from "@/components/watched-with-group-checkbox";
 
 function wordCount(text: string) {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -18,6 +19,7 @@ export function LogMovieFlow() {
   const [selected, setSelected] = useState<TmdbSearchResult | null>(null);
   const [score, setScore] = useState(7);
   const [review, setReview] = useState("");
+  const [watchedWithGroup, setWatchedWithGroup] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loggedPickId, setLoggedPickId] = useState<string | null>(null);
@@ -36,6 +38,7 @@ export function LogMovieFlow() {
     setSelected(movie);
     setScore(7);
     setReview("");
+    setWatchedWithGroup(false);
     setError(null);
     setLoggedPickId(null);
   }
@@ -74,6 +77,7 @@ export function LogMovieFlow() {
       p_pick_id: pickId,
       p_score: score,
       p_review_text: review.trim() || null,
+      p_watched_with_group: watchedWithGroup,
     });
 
     setSubmitting(false);
@@ -176,6 +180,7 @@ export function LogMovieFlow() {
               placeholder="What did you think? (optional)"
             />
           </label>
+          <WatchedWithGroupCheckbox checked={watchedWithGroup} onChange={setWatchedWithGroup} />
           {error && <p className="animate-fade-in text-sm text-red-400">{error}</p>}
           <button
             type="submit"

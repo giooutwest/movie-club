@@ -8,6 +8,7 @@ import { SoapLogo } from "@/components/soap-logo";
 
 const LINKS = [
   { href: "/", label: "Rankings" },
+  { href: "/history", label: "History" },
   { href: "/picks", label: "Picks" },
   { href: "/spin-the-wheel", label: "Spin the Wheel" },
   { href: "/settings", label: "Settings" },

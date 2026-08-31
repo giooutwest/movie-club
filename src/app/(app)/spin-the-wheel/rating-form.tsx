@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { WatchedWithGroupCheckbox } from "@/components/watched-with-group-checkbox";
 
 function wordCount(text: string) {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -20,6 +21,7 @@ export function RatingForm({
 }) {
   const [score, setScore] = useState(7);
   const [review, setReview] = useState("");
+  const [watchedWithGroup, setWatchedWithGroup] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -38,6 +40,7 @@ export function RatingForm({
       profile_id: profileId,
       score,
       review_text: review.trim(),
+      watched_with_group: watchedWithGroup,
     });
     setSubmitting(false);
     if (dbError) {
@@ -73,6 +76,7 @@ export function RatingForm({
           placeholder="What did you think?"
         />
       </label>
+      <WatchedWithGroupCheckbox checked={watchedWithGroup} onChange={setWatchedWithGroup} />
       {error && <p className="text-sm text-red-400">{error}</p>}
       <button
         type="submit"
